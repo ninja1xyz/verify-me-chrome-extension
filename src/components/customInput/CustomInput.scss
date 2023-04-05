@@ -1,0 +1,17 @@
+@import "../../constants/colors.scss";
+
+.customInput {
+  width: 100% !important;
+  color: $white !important;
+  .css-v4u5dn-MuiInputBase-root-MuiInput-root:before,
+  .css-v4u5dn-MuiInputBase-root-MuiInput-root:after {
+    border-color: $white !important;
+  }
+  label,
+  input {
+    color: $white !important;
+  }
+  p {
+    color: $radicalRed !important;
+  }
+}
