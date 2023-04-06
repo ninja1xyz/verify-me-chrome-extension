@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 
 import classes from "./Home.module.scss";
 import { Box, Typography, Tooltip } from "@mui/material";
@@ -6,32 +6,30 @@ import Login from "./components/login/Login";
 import CustomButton from "../customButton/CustomButton";
 import { RemoveData, getData, storeData } from "../../utils/chromeService";
 import { v4 as uuidv4 } from "uuid";
+import { updateIsCode, updateSecret } from "../../store/features/secret";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
 
-interface IHome {
-  isLogin: boolean;
-  setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsCode: React.Dispatch<React.SetStateAction<boolean>>;
-  setSecret: React.Dispatch<React.SetStateAction<string>>;
-}
-const Home: React.FC<IHome> = ({
-  isLogin,
-  setIsLogin,
-  setIsCode,
-  setSecret: updateSecretKey,
-}) => {
-  let secret = JSON.parse(getData() || "{}");
-  const [secretKey, setSecret] = useState(secret?.secret || "");
+const Home = () => {
+  const dispatch = useDispatch();
+  const { isLogin, secret } = useSelector((state: RootState) => state.secret);
 
-  const updateSecret = () => {
-    const data = { ...secret };
+  const showSecretKey = () => {
+    const data = JSON.parse(secret || "");
+    return data?.secret || "";
+  };
+
+  const updateNewSecret = async () => {
+    const secret = await getData();
+    const data = { ...JSON.parse(secret || "") };
     data.secret = uuidv4();
     storeData(data);
-    setSecret(data.secret);
+    dispatch(updateSecret({ secret: JSON.stringify(data) || "" }));
   };
   const removeSecret = () => {
     RemoveData();
-    setIsCode(true);
-    updateSecretKey("");
+    dispatch(updateIsCode({ isCode: true }));
+    dispatch(updateSecret({ secret: "" }));
   };
   const homeSection = () => {
     return (
@@ -39,10 +37,10 @@ const Home: React.FC<IHome> = ({
         <Typography variant="h6">Secret Code</Typography>
         <Tooltip title="Secret Code">
           <Typography variant="h6" className={classes.code}>
-            {secretKey || ""}
+            {showSecretKey() || ""}
           </Typography>
         </Tooltip>
-        <CustomButton onClick={updateSecret}>Regenerate Secret</CustomButton>
+        <CustomButton onClick={updateNewSecret}>Regenerate Secret</CustomButton>
         <CustomButton onClick={removeSecret} sx={{ marginTop: "20px" }}>
           Reset
         </CustomButton>
@@ -52,7 +50,7 @@ const Home: React.FC<IHome> = ({
 
   return (
     <Box className={classes.container}>
-      {isLogin ? <Login setIsLogin={setIsLogin} /> : homeSection()}
+      {isLogin ? <Login /> : homeSection()}
     </Box>
   );
 };

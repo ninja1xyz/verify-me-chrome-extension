@@ -9,24 +9,23 @@ import { validations } from "./data/validations";
 import { IRegister, initialValues } from "./data/initialValues";
 import Register from "./components/register/Register";
 import { storeData } from "../../utils/chromeService";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../../store/store";
+import { updateIsCode, updateSecret } from "../../store/features/secret";
 
-interface IInitialization {
-  isCode: boolean;
-  setIsCode: React.Dispatch<React.SetStateAction<boolean>>;
-  setSecret?: React.Dispatch<React.SetStateAction<string>>;
-}
+const Initialization = () => {
+  const dispatch = useDispatch();
+  const { isCode } = useSelector((state: RootState) => state.secret);
 
-const Initialization: React.FC<IInitialization> = ({
-  isCode,
-  setIsCode,
-  setSecret,
-}) => {
   const handleSubmit = (values: IRegister) => {
-    let hash = CryptoJS.AES.encrypt(values?.password, "123").toString();
+    let hash = CryptoJS.AES.encrypt(
+      values?.password,
+      process.env.REACT_APP_Secret_KEY || "test"
+    ).toString();
     const data = { secret: values?.secret, password: hash };
     storeData(data);
-    setIsCode(false);
-    setSecret && setSecret(JSON.stringify(data));
+    dispatch(updateIsCode({ isCode: false }));
+    dispatch(updateSecret({ secret: JSON.stringify(data) || "" }));
   };
 
   const formProps = useFormik({
@@ -34,6 +33,9 @@ const Initialization: React.FC<IInitialization> = ({
     validationSchema: validations,
     onSubmit: handleSubmit,
   });
+  const handleNext = () => {
+    dispatch(updateIsCode({ isCode: false }));
+  };
 
   const codeSection = () => {
     return (
@@ -44,7 +46,7 @@ const Initialization: React.FC<IInitialization> = ({
             {formProps?.values?.secret || ""}
           </Typography>
         </Tooltip>
-        <CustomButton onClick={() => setIsCode(false)}>Next</CustomButton>
+        <CustomButton onClick={handleNext}>Next</CustomButton>
       </>
     );
   };

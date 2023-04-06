@@ -6,35 +6,32 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import classes from "./Navbar.module.scss";
 import { COLORS } from "../../constants/colors";
 import CustomIconButton from "../iconButton/IconButton";
-import { getData } from "../../utils/chromeService";
+import { RootState } from "../../store/store";
+import { useDispatch, useSelector } from "react-redux";
+import { updateIsCode, updateIsLogin } from "../../store/features/secret";
 
-interface INavBar {
-  isCode: boolean;
-  isLogin?: boolean;
-  setIsCode: React.Dispatch<React.SetStateAction<boolean>>;
-  setIsLogin?: React.Dispatch<React.SetStateAction<boolean>>;
-}
+const NavBar = () => {
+  const dispatch = useDispatch();
+  const {
+    isCode,
+    isLogin,
+    secret: secretKey,
+  } = useSelector((state: RootState) => state.secret);
 
-const NavBar: React.FC<INavBar> = ({
-  isCode,
-  setIsCode,
-  setIsLogin,
-  isLogin,
-}) => {
-  const secret = getData();
-  console.log("secret", secret);
   const Logout = () => {
-    setIsLogin && setIsLogin(true);
+    dispatch(updateIsLogin({ isLogin: true }));
   };
-
+  const handleBack = () => {
+    dispatch(updateIsCode({ isCode: true }));
+  };
   return (
     <Box className={classes.container}>
       {isCode ? (
         <></>
       ) : (
         <>
-          {!secret && (
-            <CustomIconButton title="Back" onClick={() => setIsCode(true)}>
+          {!secretKey && (
+            <CustomIconButton title="Back" onClick={handleBack}>
               <ArrowBackIcon sx={{ color: COLORS.white }} />
             </CustomIconButton>
           )}
@@ -44,7 +41,7 @@ const NavBar: React.FC<INavBar> = ({
         <img alt="logo" src={"./verify-me.png"} className={classes.logo} />
         <Typography variant="h6">Verify me</Typography>
       </Box>
-      {secret && !isLogin && (
+      {secretKey && !isLogin && (
         <CustomIconButton title="Logout" onClick={Logout}>
           <LogoutIcon sx={{ color: COLORS.white }} />
         </CustomIconButton>

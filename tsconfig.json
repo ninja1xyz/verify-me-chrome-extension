@@ -19,9 +19,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "typeRoots": ["chrome.d.ts"]
   },
   "include": [
-    "src","chrome.d.ts"
+    "src"
   ]
 }

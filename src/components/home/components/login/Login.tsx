@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ILogin, initialValues, validations } from "../../data/initialValues";
-import { FormikHelpers, FormikProps, useFormik } from "formik";
+import { FormikHelpers, useFormik } from "formik";
 import CryptoJS from "crypto-js";
 import { IconButton, InputAdornment, Typography, Box } from "@mui/material";
 import CustomInput from "../../../customInput/CustomInput";
@@ -10,24 +10,27 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import CustomButton from "../../../customButton/CustomButton";
 import { getData } from "../../../../utils/chromeService";
+import { updateIsLogin } from "../../../../store/features/secret";
+import { useDispatch } from "react-redux";
 
-interface ILoginPage {
-  setIsLogin: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const Login: React.FC<ILoginPage> = ({ setIsLogin }) => {
+const Login = () => {
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
-  const handleFormSubmit = (
+  const handleFormSubmit = async (
     values: ILogin,
     formikHelpers: FormikHelpers<ILogin>
   ) => {
-    const secretData = JSON.parse(getData());
-    const byte = CryptoJS.AES.decrypt(secretData?.password, "123");
+    const secret = await getData();
+    const secretData = JSON.parse(secret || "");
+    const byte = CryptoJS.AES.decrypt(
+      secretData?.password,
+      process.env.REACT_APP_Secret_KEY || "test"
+    );
     const decryptedData = byte.toString(CryptoJS.enc.Utf8);
     if (decryptedData === values.password) {
-      setIsLogin(false);
+      dispatch(updateIsLogin({ isLogin: false }));
     } else {
       formikHelpers?.setErrors({ password: "Password is invalid" });
     }
